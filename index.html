@@ -593,7 +593,7 @@
     </footer>
 
     <script>
-        // Подключение к серверу - ЗАМЕНИ НА СВОЙ URL СЕРВЕРА
+        // Подключение к серверу
         const SERVER_URL = 'https://bunker-server-uzz6.onrender.com';
         const socket = io(SERVER_URL);
         
@@ -669,6 +669,11 @@
         // WebSocket события
         socket.on('connect', () => {
             console.log('Connected to server');
+            addSystemMessage('Подключено к серверу', 'lobby');
+        });
+
+        socket.on('disconnect', () => {
+            addSystemMessage('Отключено от сервера', 'lobby');
         });
         
         socket.on('room_created', (data) => {
@@ -679,6 +684,7 @@
         });
         
         socket.on('players_update', (players) => {
+            console.log('Players update received:', players);
             gameState.players = players.map(p => ({
                 ...p,
                 isCurrentUser: p.id === gameState.playerId
@@ -696,10 +702,12 @@
         
         socket.on('attribute_revealed', (data) => {
             const player = gameState.players.find(p => p.id === data.playerId);
-            if (player && !player.isCurrentUser) {
+            if (player) {
                 player.revealed[data.attribute] = true;
                 renderPlayers();
-                addSystemMessage(`${player.username} раскрыл(а) свою ${getAttributeName(data.attribute)}`, 'game');
+                if (!player.isCurrentUser) {
+                    addSystemMessage(`${player.username} раскрыл(а) свою ${getAttributeName(data.attribute)}`, 'game');
+                }
             }
         });
         
@@ -715,6 +723,10 @@
         socket.on('chat_message', (data) => {
             addChatMessage(data.username, data.message, data.context);
         });
+
+        socket.on('error', (data) => {
+            alert('Ошибка: ' + data.message);
+        });
         
         // Функции игры
         function getRandomItem(array) {
@@ -724,6 +736,8 @@
         function renderPlayers() {
             playersGrid.innerHTML = '';
             gamePlayersGrid.innerHTML = '';
+            
+            console.log('Rendering players:', gameState.players);
             
             gameState.players.forEach(player => {
                 const playerCard = createPlayerCard(player, 'lobby');
@@ -736,7 +750,7 @@
             });
             
             const currentPlayer = gameState.players.find(p => p.isCurrentUser);
-            const allReady = gameState.players.every(p => p.ready);
+            const allReady = gameState.players.length > 0 && gameState.players.every(p => p.ready);
             const minPlayers = gameState.players.length >= 3;
             
             if (currentPlayer && currentPlayer.isHost && allReady && minPlayers) {
@@ -765,7 +779,7 @@
             
             attributes.forEach(attr => {
                 const isRevealed = player.revealed[attr.key];
-                const value = isRevealed ? player[attr.key] : 'Скрыто';
+                const value = isRevealed ? player[attr.key] : '???';
                 
                 attributesHTML += `
                     <div class="attribute ${isRevealed ? '' : 'hidden'}">
@@ -805,9 +819,9 @@
                 player.revealed[attribute] = true;
                 renderPlayers();
                 socket.emit('reveal_attribute', {
-                    roomCode: gameState.roomCode,
                     attribute: attribute
                 });
+                addSystemMessage(`Вы раскрыли свою ${getAttributeName(attribute)}`, 'game');
             }
         }
         
@@ -829,14 +843,15 @@
             const player = gameState.players.find(p => p.id === playerId);
             if (player && player.isCurrentUser) {
                 Object.keys(player.revealed).forEach(key => {
-                    player.revealed[key] = true;
-                    socket.emit('reveal_attribute', {
-                        roomCode: gameState.roomCode,
-                        attribute: key
-                    });
+                    if (!player.revealed[key]) {
+                        player.revealed[key] = true;
+                        socket.emit('reveal_attribute', {
+                            attribute: key
+                        });
+                    }
                 });
                 renderPlayers();
-                addSystemMessage(`${player.username} раскрыл(а) все свои характеристики`, 'game');
+                addSystemMessage('Вы раскрыли все свои характеристики', 'game');
             }
         }
         
@@ -1055,5 +1070,4 @@
         document.getElementById('username').value = 'Игрок' + Math.floor(Math.random() * 1000);
     </script>
 </body>
-
 </html>
