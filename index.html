@@ -36,7 +36,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -164,7 +164,6 @@
             font-weight: 600;
             transition: all 0.3s;
             text-decoration: none;
-            width: 100%;
         }
         
         .btn:hover {
@@ -250,61 +249,6 @@
             background: var(--success);
         }
         
-        .attributes-list {
-            margin-top: 1rem;
-        }
-        
-        .attribute {
-            margin-bottom: 0.8rem;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .attribute.hidden {
-            background: rgba(255, 255, 255, 0.02);
-            color: var(--text-secondary);
-        }
-        
-        .attribute.hidden .attribute-value {
-            filter: blur(4px);
-            user-select: none;
-        }
-        
-        .attribute-name {
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .reveal-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            width: 26px;
-            height: 26px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.7rem;
-        }
-        
-        .reveal-btn:hover {
-            background: var(--highlight);
-        }
-        
-        .reveal-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        
         .game-controls {
             display: flex;
             justify-content: center;
@@ -330,133 +274,6 @@
             font-size: 1.3rem;
             margin-bottom: 0.5rem;
             color: var(--highlight);
-        }
-        
-        .cards-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin: 1.5rem 0;
-        }
-        
-        .card {
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 1.2rem;
-            width: 200px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--highlight);
-        }
-        
-        .card-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--highlight);
-        }
-        
-        .vote-screen {
-            text-align: center;
-        }
-        
-        .vote-instruction {
-            margin-bottom: 2rem;
-            font-size: 1.2rem;
-        }
-        
-        .chat-container {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .chat-messages {
-            margin-bottom: 1rem;
-            min-height: 200px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .chat-input {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .chat-input input {
-            flex: 1;
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: var(--text);
-        }
-        
-        .chat-input button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0 15px;
-            cursor: pointer;
-        }
-        
-        .message {
-            margin-bottom: 0.8rem;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-        }
-        
-        .message.system {
-            background: rgba(233, 69, 96, 0.2);
-            font-style: italic;
-        }
-        
-        .message-sender {
-            font-weight: 600;
-            color: var(--highlight);
-        }
-        
-        footer {
-            background: var(--secondary);
-            padding: 1.5rem 0;
-            text-align: center;
-            margin-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .tab-btn.active {
-            background: var(--highlight);
-        }
-        
-        .tab-content {
-            transition: all 0.3s ease;
         }
         
         .round-info {
@@ -502,10 +319,6 @@
             border-left: 4px solid var(--success);
         }
         
-        .my-attribute.locked .attribute-value {
-            color: var(--text-secondary);
-        }
-        
         .round-attributes {
             display: flex;
             flex-wrap: wrap;
@@ -525,6 +338,115 @@
             background: var(--highlight);
         }
         
+        .continue-btn {
+            background: var(--success) !important;
+        }
+        
+        .vote-info {
+            background: var(--warning);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        /* Стили для таблицы характеристик */
+        .attributes-table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .attributes-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .attributes-table th {
+            background: var(--accent);
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+        }
+
+        .attributes-table td {
+            padding: 10px 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .player-name-cell {
+            background: var(--accent);
+            font-weight: 600;
+            text-align: left;
+            position: sticky;
+            left: 0;
+            min-width: 120px;
+        }
+
+        .attribute-cell {
+            background: rgba(255,255,255,0.03);
+            transition: all 0.3s;
+        }
+
+        .attribute-cell.revealed {
+            background: rgba(76, 175, 80, 0.15);
+        }
+
+        .attribute-cell.hidden {
+            background: rgba(255,255,255,0.01);
+            color: var(--text-secondary);
+        }
+
+        .attribute-cell.hidden .attribute-value {
+            filter: blur(4px);
+            user-select: none;
+        }
+
+        .attribute-value {
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .reveal-table-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .reveal-table-btn:hover {
+            background: var(--highlight);
+        }
+
+        .reveal-table-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .table-section-title {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem 0;
+            color: var(--highlight);
+            text-align: center;
+        }
+        
         @media (max-width: 768px) {
             .players-grid {
                 grid-template-columns: 1fr;
@@ -542,6 +464,19 @@
             .my-attributes {
                 grid-template-columns: 1fr;
             }
+
+            .attributes-table-container {
+                padding: 1rem;
+            }
+
+            .attributes-table {
+                font-size: 0.8rem;
+            }
+
+            .attributes-table th,
+            .attributes-table td {
+                padding: 6px 4px;
+            }
         }
     </style>
 </head>
@@ -555,7 +490,7 @@
                 </div>
                 <div class="user-info">
                     <div id="user-display" class="username" style="display: none;"></div>
-                    <button id="logout-btn" class="btn btn-secondary" style="display: none; width: auto; padding: 8px 15px;">
+                    <button id="logout-btn" class="btn btn-secondary" style="display: none; padding: 8px 15px;">
                         <i class="fas fa-sign-out-alt"></i> Выйти
                     </button>
                 </div>
@@ -669,22 +604,38 @@
                             <!-- Мои характеристики будут здесь -->
                         </div>
                     </div>
-                    
-                    <h2>Участники бункера</h2>
-                    <div class="players-grid" id="game-players-grid">
-                        <!-- Игроки в игре будут отображаться здесь -->
-                    </div>
-                    
-                    <h2>Специальные карты</h2>
-                    <div class="cards-container" id="cards-container">
-                        <!-- Карты будут отображаться здесь -->
+
+                    <!-- Таблица характеристик всех игроков -->
+                    <h2 class="table-section-title">📊 Таблица характеристик</h2>
+                    <div class="attributes-table-container">
+                        <table class="attributes-table" id="attributes-table">
+                            <thead>
+                                <tr>
+                                    <th>Игрок</th>
+                                    <th>Профессия</th>
+                                    <th>Здоровье</th>
+                                    <th>Биология</th>
+                                    <th>Хобби</th>
+                                    <th>Багаж</th>
+                                    <th>Фобия</th>
+                                    <th>Характер</th>
+                                    <th>Дополнительно</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attributes-table-body">
+                                <!-- Данные таблицы будут здесь -->
+                            </tbody>
+                        </table>
                     </div>
                     
                     <div class="game-controls">
-                        <button id="next-round-btn" class="btn">
-                            <i class="fas fa-forward"></i> Следующий круг
+                        <button id="reveal-profession-btn" class="btn" style="display: none;">
+                            <i class="fas fa-eye"></i> Раскрыть профессию
                         </button>
-                        <button id="game-vote-btn" class="btn">
+                        <button id="continue-game-btn" class="btn continue-btn" style="display: none;">
+                            <i class="fas fa-forward"></i> Продолжить игру
+                        </button>
+                        <button id="start-vote-btn" class="btn" style="display: none;">
                             <i class="fas fa-vote-yea"></i> Начать голосование
                         </button>
                     </div>
@@ -707,17 +658,17 @@
                 <div class="vote-screen">
                     <h1>Голосование за исключение</h1>
                     <p class="vote-instruction">Выберите игрока, которого вы хотите исключить из бункера:</p>
+                    <div class="vote-info" id="vote-info">
+                        Голосование началось! Каждый круг исключается один игрок.
+                    </div>
                     
                     <div class="players-grid" id="vote-players-grid">
                         <!-- Игроки для голосования будут отображаться здесь -->
                     </div>
                     
                     <div class="game-controls">
-                        <button id="confirm-vote-btn" class="btn">
+                        <button id="confirm-vote-btn" class="btn" style="display: none;">
                             <i class="fas fa-check"></i> Подтвердить голос
-                        </button>
-                        <button id="cancel-vote-btn" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Отмена
                         </button>
                     </div>
                 </div>
@@ -732,10 +683,7 @@
     </footer>
 
     <script>
-        // Подключение к серверу с обработкой ошибок
         const SERVER_URL = 'https://bunker-server-uzz6.onrender.com';
-        console.log('🔄 Подключаемся к серверу:', SERVER_URL);
-        
         let socket;
         
         try {
@@ -748,33 +696,9 @@
             alert('Ошибка подключения к серверу');
         }
         
-        // Данные для игры
-        const professions = ["Врач", "Инженер", "Ученый", "Солдат", "Фермер", "Повар", "Учитель", "Строитель"];
-        const healthConditions = ["Здоров", "Легкое заболевание", "Хроническое заболевание", "Инвалидность"];
-        const biology = ["Мужчина, 25 лет", "Женщина, 30 лет", "Мужчина, 45 лет", "Женщина, 22 года"];
-        const hobbies = ["Садоводство", "Кулинария", "Ремонт техники", "Чтение", "Спорт"];
-        const luggage = ["Аптечка", "Консервы", "Вода", "Инструменты", "Книги", "Оружие"];
-        const phobias = ["Арахнофобия", "Клаустрофобия", "Агорафобия", "Акрофобия"];
-        const characters = ["Добрый", "Агрессивный", "Эгоистичный", "Альтруист", "Лидер"];
-        const additionalInfo = ["Имеет военную подготовку", "Знает основы медицины", "Умеет выращивать растения", "Разбирается в технике"];
-        
-        const specialCards = [
-            { name: "Дополнительный голос", description: "Ваш голос считается за два" },
-            { name: "Иммунитет", description: "Вы не можете быть исключены" },
-            { name: "Обмен характеристиками", description: "Поменяйтесь характеристикой с другим игроком" },
-            { name: "Ревизия", description: "Отмените результаты голосования" }
-        ];
-        
-        const situations = [
-            "Обнаружена утечка радиации в одном из отсеков. Кто-то должен починить его, рискуя получить дозу облучения.",
-            "Запасы продовольствия испорчены. Нужно найти виновного или способ восстановить запасы.",
-            "Обнаружен больной с заразным заболеванием. Нужно решить, как поступить с ним.",
-            "Система вентиляции вышла из строя. Без кислорода осталось на 2 дня."
-        ];
-
         // Порядок раскрытия характеристик по кругам
         const roundAttributes = [
-            ['profession'], // Круг 1
+            ['profession'], // Круг 1 - ТОЛЬКО профессия
             ['health', 'biology'], // Круг 2
             ['hobby', 'luggage'], // Круг 3
             ['phobia', 'character'], // Круг 4
@@ -787,10 +711,10 @@
             roomCode: null,
             players: [],
             gameStarted: false,
-            currentSituation: 0,
             playerId: null,
             currentRound: 1,
-            myPlayer: null
+            myPlayer: null,
+            selectedVote: null
         };
         
         // DOM элементы
@@ -809,17 +733,18 @@
         const myAttributesContainer = document.getElementById('my-attributes');
         const roundInfo = document.getElementById('round-info');
         const roundAttributesContainer = document.getElementById('round-attributes');
+        const voteInfo = document.getElementById('vote-info');
+        const attributesTableBody = document.getElementById('attributes-table-body');
         
         const readyBtn = document.getElementById('ready-btn');
         const startGameBtn = document.getElementById('start-game-btn');
         const leaveRoomBtn = document.getElementById('leave-room-btn');
-        const nextRoundBtn = document.getElementById('next-round-btn');
-        const gameVoteBtn = document.getElementById('game-vote-btn');
+        const revealProfessionBtn = document.getElementById('reveal-profession-btn');
+        const continueGameBtn = document.getElementById('continue-game-btn');
+        const startVoteBtn = document.getElementById('start-vote-btn');
         const confirmVoteBtn = document.getElementById('confirm-vote-btn');
-        const cancelVoteBtn = document.getElementById('cancel-vote-btn');
         
         const currentSituationElement = document.getElementById('current-situation');
-        const cardsContainer = document.getElementById('cards-container');
         
         const lobbyChat = document.getElementById('lobby-chat');
         const lobbyChatInput = document.getElementById('lobby-chat-input');
@@ -876,6 +801,8 @@
             
             renderPlayers();
             renderMyCards();
+            renderAttributesTable();
+            updateGameControls();
         });
         
         socket.on('player_joined', (data) => {
@@ -891,6 +818,7 @@
             if (player) {
                 player.revealed[data.attribute] = true;
                 renderPlayers();
+                renderAttributesTable();
                 if (!player.isCurrentUser) {
                     addSystemMessage(`${player.username} раскрыл(а) свою ${getAttributeName(data.attribute)}`, 'game');
                 }
@@ -904,9 +832,10 @@
             gameScreen.classList.add('active');
             renderPlayers();
             renderMyCards();
-            renderSpecialCards();
+            renderAttributesTable();
             updateRoundInfo();
-            addSystemMessage('Игра началась!', 'game');
+            updateGameControls();
+            addSystemMessage('Игра началась! Первый круг: раскройте свою профессию.', 'game');
         });
 
         socket.on('next_round', (data) => {
@@ -914,7 +843,23 @@
             updateRoundInfo();
             renderMyCards();
             renderPlayers();
+            renderAttributesTable();
+            updateGameControls();
             addSystemMessage(`Начался круг ${gameState.currentRound}`, 'game');
+        });
+
+        socket.on('start_voting', () => {
+            gameScreen.classList.remove('active');
+            voteScreen.classList.add('active');
+            renderVotePlayers();
+            addSystemMessage('Началось голосование за исключение!', 'game');
+        });
+
+        socket.on('player_eliminated', (data) => {
+            addSystemMessage(`Игрок ${data.username} исключен из бункера!`, 'game');
+            // Возвращаемся в игру после голосования
+            voteScreen.classList.remove('active');
+            gameScreen.classList.add('active');
         });
         
         socket.on('chat_message', (data) => {
@@ -923,21 +868,14 @@
 
         socket.on('error', (data) => {
             alert('Ошибка: ' + data.message);
-            authScreen.classList.add('active');
-            lobbyScreen.classList.remove('active');
         });
         
         // Функции игры
-        function getRandomItem(array) {
-            return array[Math.floor(Math.random() * array.length)];
-        }
-
         function updateRoundInfo() {
             const currentAttributes = roundAttributes[gameState.currentRound - 1];
             const attributeNames = currentAttributes.map(attr => getAttributeName(attr)).join(', ');
-            roundInfo.textContent = `Круг ${gameState.currentRound}: Открыты ${attributeNames}`;
+            roundInfo.textContent = `Круг ${gameState.currentRound}: ${attributeNames}`;
             
-            // Обновляем отображение доступных атрибутов
             roundAttributesContainer.innerHTML = '';
             
             roundAttributes.forEach((roundAttrs, index) => {
@@ -951,12 +889,35 @@
             });
         }
 
-        function canRevealAttribute(attribute) {
-            if (!gameState.myPlayer) return false;
+        function updateGameControls() {
+            if (!gameState.gameStarted || !gameState.myPlayer) return;
             
-            // Проверяем, можно ли раскрывать эту характеристику в текущем круге
-            const currentRoundAttributes = roundAttributes[gameState.currentRound - 1];
-            return currentRoundAttributes.includes(attribute);
+            const isHost = gameState.myPlayer.isHost;
+            const currentRound = gameState.currentRound;
+            
+            // Скрываем все кнопки сначала
+            revealProfessionBtn.style.display = 'none';
+            continueGameBtn.style.display = 'none';
+            startVoteBtn.style.display = 'none';
+            
+            if (currentRound === 1) {
+                // Первый круг - раскрытие профессии
+                if (!gameState.myPlayer.revealed.profession) {
+                    revealProfessionBtn.style.display = 'block';
+                } else if (isHost) {
+                    continueGameBtn.style.display = 'block';
+                }
+            } else if (currentRound >= 2 && currentRound <= 4) {
+                // Круги 2-4 - хост может продолжить
+                if (isHost) {
+                    continueGameBtn.style.display = 'block';
+                }
+            } else if (currentRound === 5) {
+                // Круг 5 - голосование
+                if (isHost) {
+                    startVoteBtn.style.display = 'block';
+                }
+            }
         }
         
         function renderPlayers() {
@@ -1001,34 +962,83 @@
             ];
             
             attributes.forEach(attr => {
-                const isRevealed = gameState.myPlayer.revealed[attr.key];
-                const canReveal = canRevealAttribute(attr.key);
-                const value = isRevealed ? gameState.myPlayer[attr.key] : '???';
+                const value = gameState.myPlayer[attr.key];
                 
                 const attributeElement = document.createElement('div');
-                attributeElement.className = `my-attribute ${isRevealed ? 'revealed' : ''} ${!canReveal && !isRevealed ? 'locked' : ''}`;
+                attributeElement.className = `my-attribute ${gameState.myPlayer.revealed[attr.key] ? 'revealed' : ''}`;
                 
                 attributeElement.innerHTML = `
                     <div class="attribute-name">
                         <i class="${attr.icon}"></i> ${attr.name}
                     </div>
                     <div class="attribute-value">${value}</div>
-                    ${!isRevealed && canReveal ? 
-                        `<button class="reveal-btn" data-attribute="${attr.key}"><i class="fas fa-eye"></i></button>` : 
-                        (!isRevealed ? `<button class="reveal-btn" disabled><i class="fas fa-lock"></i></button>` : '')
-                    }
+                    ${!gameState.myPlayer.revealed[attr.key] ? '<div style="color: var(--text-secondary); font-size: 0.8rem;">(скрыто)</div>' : ''}
                 `;
                 
                 myAttributesContainer.appendChild(attributeElement);
             });
+        }
 
-            // Добавляем обработчики для кнопок раскрытия
-            myAttributesContainer.querySelectorAll('.reveal-btn:not(:disabled)').forEach(btn => {
+        function renderAttributesTable() {
+            if (!gameState.gameStarted) return;
+            
+            attributesTableBody.innerHTML = '';
+            
+            gameState.players.forEach(player => {
+                const row = document.createElement('tr');
+                
+                // Ячейка с именем игрока
+                const nameCell = document.createElement('td');
+                nameCell.className = 'player-name-cell';
+                nameCell.textContent = `${player.username} ${player.isCurrentUser ? '(Вы)' : ''} ${player.isHost ? '👑' : ''}`;
+                row.appendChild(nameCell);
+                
+                // Ячейки с характеристиками
+                const attributes = ['profession', 'health', 'biology', 'hobby', 'luggage', 'phobia', 'character', 'additionalInfo'];
+                
+                attributes.forEach(attr => {
+                    const cell = document.createElement('td');
+                    const isRevealed = player.revealed[attr];
+                    const canReveal = canRevealAttribute(attr) && player.isCurrentUser && !isRevealed;
+                    
+                    cell.className = `attribute-cell ${isRevealed ? 'revealed' : 'hidden'}`;
+                    
+                    let cellContent = '';
+                    if (isRevealed) {
+                        cellContent = `<div class="attribute-value">${player[attr]}</div>`;
+                    } else {
+                        cellContent = `<div class="attribute-value">???</div>`;
+                    }
+                    
+                    // Добавляем кнопку раскрытия для своих характеристик
+                    if (canReveal) {
+                        cellContent += `<button class="reveal-table-btn" data-attribute="${attr}" title="Раскрыть ${getAttributeName(attr)}">
+                            <i class="fas fa-eye"></i>
+                        </button>`;
+                    }
+                    
+                    cell.innerHTML = cellContent;
+                    row.appendChild(cell);
+                });
+                
+                attributesTableBody.appendChild(row);
+            });
+
+            // Добавляем обработчики для кнопок раскрытия в таблице
+            attributesTableBody.querySelectorAll('.reveal-table-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const attribute = this.dataset.attribute;
                     revealAttribute(gameState.myPlayer.id, attribute);
                 });
             });
+        }
+        
+        function canRevealAttribute(attribute) {
+            if (!gameState.myPlayer) return false;
+            
+            // Проверяем, можно ли раскрывать эту характеристику в текущем круге
+            const currentRoundAttributes = roundAttributes[gameState.currentRound - 1];
+            return currentRoundAttributes.includes(attribute);
         }
         
         function createPlayerCard(player, context) {
@@ -1079,6 +1089,7 @@
                 player.revealed[attribute] = true;
                 renderPlayers();
                 renderMyCards();
+                renderAttributesTable();
                 socket.emit('reveal_attribute', {
                     attribute: attribute
                 });
@@ -1088,14 +1099,14 @@
         
         function getAttributeName(key) {
             const names = {
-                profession: 'профессию',
-                health: 'здоровье',
-                biology: 'биологию',
-                hobby: 'хобби',
-                luggage: 'багаж',
-                phobia: 'фобию',
-                character: 'характер',
-                additionalInfo: 'дополнительную информацию'
+                profession: 'Профессия',
+                health: 'Здоровье', 
+                biology: 'Биология',
+                hobby: 'Хобби',
+                luggage: 'Багаж',
+                phobia: 'Фобия',
+                character: 'Характер',
+                additionalInfo: 'Доп. информация'
             };
             return names[key] || key;
         }
@@ -1128,38 +1139,56 @@
             }
         }
         
-        function renderSpecialCards() {
-            cardsContainer.innerHTML = '';
+        function renderVotePlayers() {
+            votePlayersGrid.innerHTML = '';
+            gameState.selectedVote = null;
+            confirmVoteBtn.style.display = 'none';
             
-            const selectedCards = [];
-            while (selectedCards.length < 2) {
-                const card = getRandomItem(specialCards);
-                if (!selectedCards.includes(card)) {
-                    selectedCards.push(card);
-                }
-            }
-            
-            selectedCards.forEach(card => {
-                const cardElement = document.createElement('div');
-                cardElement.className = 'card';
-                cardElement.innerHTML = `
-                    <div class="card-title">${card.name}</div>
-                    <div class="card-description">${card.description}</div>
-                `;
-                cardElement.addEventListener('click', function() {
-                    useCard(card);
+            gameState.players.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'player-card vote-player-card';
+                card.dataset.playerId = player.id;
+                
+                let revealedAttributes = '';
+                Object.entries(player.revealed).forEach(([key, isRevealed]) => {
+                    if (isRevealed) {
+                        revealedAttributes += `<div class="attribute"><span class="attribute-name">${getAttributeName(key)}:</span> <span class="attribute-value">${player[key]}</span></div>`;
+                    }
                 });
-                cardsContainer.appendChild(cardElement);
+                
+                card.innerHTML = `
+                    <div class="player-header">
+                        <div class="player-name">${player.username} ${player.isCurrentUser ? '(Вы)' : ''}</div>
+                    </div>
+                    <div class="attributes-list">
+                        ${revealedAttributes || '<div class="attribute">Нет раскрытых характеристик</div>'}
+                    </div>
+                    <button class="btn vote-select-btn" data-player-id="${player.id}" ${player.isCurrentUser ? 'disabled' : ''}>
+                        <i class="fas fa-user-minus"></i> Выбрать для исключения
+                    </button>
+                `;
+                votePlayersGrid.appendChild(card);
+            });
+            
+            document.querySelectorAll('.vote-select-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const playerId = this.dataset.playerId;
+                    gameState.selectedVote = playerId;
+                    
+                    // Снимаем выделение со всех карточек
+                    document.querySelectorAll('.vote-player-card').forEach(card => {
+                        card.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    });
+                    
+                    // Выделяем выбранную карточку
+                    this.closest('.vote-player-card').style.borderColor = 'var(--highlight)';
+                    
+                    confirmVoteBtn.style.display = 'block';
+                });
             });
         }
         
-        function useCard(card) {
-            alert(`Использована карта: ${card.name}\n${card.description}`);
-            addSystemMessage(`Игрок ${gameState.currentUser} использовал карту "${card.name}"`, 'game');
-        }
-        
         // Обработчики событий
-        // Переключение вкладок
         tabCreate.addEventListener('click', function() {
             tabCreate.classList.add('active');
             tabJoin.classList.remove('active');
@@ -1174,7 +1203,6 @@
             createTab.style.display = 'none';
         });
 
-        // Создание комнаты
         createRoomBtn.addEventListener('click', function() {
             const username = usernameCreate.value.trim();
             if (username.length < 2) {
@@ -1193,7 +1221,6 @@
             lobbyScreen.classList.add('active');
         });
 
-        // Присоединение к комнате
         joinRoomBtn.addEventListener('click', function() {
             const username = usernameJoin.value.trim();
             const roomCode = roomCodeInput.value.trim().toUpperCase();
@@ -1221,11 +1248,50 @@
         
         logoutBtn.addEventListener('click', function() {
             socket.emit('leave_room');
+            resetGameState();
+        });
+        
+        readyBtn.addEventListener('click', function() {
+            socket.emit('toggle_ready');
+        });
+        
+        startGameBtn.addEventListener('click', function() {
+            socket.emit('start_game');
+        });
+
+        revealProfessionBtn.addEventListener('click', function() {
+            socket.emit('reveal_attribute', { attribute: 'profession' });
+        });
+
+        continueGameBtn.addEventListener('click', function() {
+            socket.emit('next_round');
+        });
+
+        startVoteBtn.addEventListener('click', function() {
+            socket.emit('start_voting');
+        });
+        
+        leaveRoomBtn.addEventListener('click', function() {
+            if (confirm('Вы уверены, что хотите покинуть комнату?')) {
+                logoutBtn.click();
+            }
+        });
+        
+        confirmVoteBtn.addEventListener('click', function() {
+            if (gameState.selectedVote) {
+                socket.emit('cast_vote', { targetPlayerId: gameState.selectedVote });
+                addSystemMessage('Вы проголосовали!', 'game');
+                confirmVoteBtn.style.display = 'none';
+            }
+        });
+        
+        function resetGameState() {
             gameState.currentUser = null;
             gameState.players = [];
             gameState.gameStarted = false;
             gameState.currentRound = 1;
             gameState.myPlayer = null;
+            gameState.selectedVote = null;
             
             userDisplay.style.display = 'none';
             logoutBtn.style.display = 'none';
@@ -1238,83 +1304,7 @@
             usernameCreate.value = '';
             usernameJoin.value = '';
             roomCodeInput.value = '';
-        });
-        
-        readyBtn.addEventListener('click', function() {
-            socket.emit('toggle_ready');
-        });
-        
-        startGameBtn.addEventListener('click', function() {
-            socket.emit('start_game');
-        });
-
-        nextRoundBtn.addEventListener('click', function() {
-            socket.emit('next_round');
-        });
-        
-        leaveRoomBtn.addEventListener('click', function() {
-            if (confirm('Вы уверены, что хотите покинуть комнату?')) {
-                logoutBtn.click();
-            }
-        });
-        
-        gameVoteBtn.addEventListener('click', function() {
-            gameScreen.classList.remove('active');
-            voteScreen.classList.add('active');
-            renderVotePlayers();
-        });
-        
-        function renderVotePlayers() {
-            votePlayersGrid.innerHTML = '';
-            
-            gameState.players.forEach(player => {
-                const card = document.createElement('div');
-                card.className = 'player-card';
-                card.innerHTML = `
-                    <div class="player-header">
-                        <div class="player-name">${player.username} ${player.isCurrentUser ? '(Вы)' : ''}</div>
-                    </div>
-                    <div class="attributes-list">
-                        <div class="attribute">
-                            <span class="attribute-name"><i class="fas fa-briefcase"></i> Профессия:</span>
-                            <span class="attribute-value">${player.profession}</span>
-                        </div>
-                        <div class="attribute">
-                            <span class="attribute-name"><i class="fas fa-heartbeat"></i> Здоровье:</span>
-                            <span class="attribute-value">${player.health}</span>
-                        </div>
-                        <div class="attribute">
-                            <span class="attribute-name"><i class="fas fa-dna"></i> Биология:</span>
-                            <span class="attribute-value">${player.biology}</span>
-                        </div>
-                    </div>
-                    <button class="btn vote-player-btn" data-player-id="${player.id}" ${player.isCurrentUser ? 'disabled' : ''}>
-                        <i class="fas fa-user-minus"></i> Исключить
-                    </button>
-                `;
-                votePlayersGrid.appendChild(card);
-            });
-            
-            document.querySelectorAll('.vote-player-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const playerId = this.dataset.playerId;
-                    socket.emit('cast_vote', { targetPlayerId: playerId });
-                    alert('Ваш голос учтен!');
-                    voteScreen.classList.remove('active');
-                    gameScreen.classList.add('active');
-                });
-            });
         }
-        
-        confirmVoteBtn.addEventListener('click', function() {
-            voteScreen.classList.remove('active');
-            gameScreen.classList.add('active');
-        });
-        
-        cancelVoteBtn.addEventListener('click', function() {
-            voteScreen.classList.remove('active');
-            gameScreen.classList.add('active');
-        });
         
         // Обработчики чата
         function setupChatHandlers() {
@@ -1359,4 +1349,3 @@
         usernameJoin.value = 'Игрок' + Math.floor(Math.random() * 1000);
     </script>
 </body>
-</html>
