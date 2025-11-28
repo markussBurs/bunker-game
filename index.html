@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Бункер от markuss - Онлайн игра</title>
+    <title>Бункер 42 - Онлайн игра</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
@@ -430,6 +430,30 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: var(--highlight);
+        }
+        
+        .tab-content {
+            transition: all 0.3s ease;
+        }
+        
         @media (max-width: 768px) {
             .players-grid {
                 grid-template-columns: 1fr;
@@ -452,7 +476,7 @@
             <div class="header-content">
                 <div class="logo">
                     <i class="fas fa-radiation-alt"></i>
-                    Бункер
+                    Бункер 42
                 </div>
                 <div class="user-info">
                     <div id="user-display" class="username" style="display: none;"></div>
@@ -466,27 +490,46 @@
     
     <main class="main-content">
         <div class="container">
-                        <!-- Экран авторизации -->
+            <!-- Экран авторизации -->
             <div id="auth-screen" class="screen active">
                 <div class="auth-screen">
                     <div class="auth-card">
                         <h2><i class="fas fa-user-shield"></i> Вход в Бункер 42</h2>
-                        <div class="form-group">
-                            <label for="username">Ваш никнейм:</label>
-                            <input type="text" id="username" placeholder="Введите ваш никнейм" maxlength="20">
+                        
+                        <!-- Вкладки -->
+                        <div class="tabs">
+                            <button id="tab-create" class="tab-btn active">Создать комнату</button>
+                            <button id="tab-join" class="tab-btn">Присоединиться</button>
                         </div>
-                        <div class="form-group">
-                            <label for="room-code-input">Код комнаты (если есть):</label>
-                            <input type="text" id="room-code-input" placeholder="Введите код комнаты" maxlength="8" style="text-transform: uppercase;">
+                        
+                        <!-- Форма создания комнаты -->
+                        <div id="create-tab" class="tab-content">
+                            <div class="form-group">
+                                <label for="username-create">Ваш никнейм:</label>
+                                <input type="text" id="username-create" placeholder="Введите ваш никнейм" maxlength="20">
+                            </div>
+                            <button id="create-room-btn" class="btn">
+                                <i class="fas fa-plus"></i> Создать комнату
+                            </button>
                         </div>
-                        <button id="create-room-btn" class="btn" style="margin-bottom: 10px;">
-                            <i class="fas fa-plus"></i> Создать комнату
-                        </button>
-                        <button id="join-room-btn" class="btn btn-secondary">
-                            <i class="fas fa-sign-in-alt"></i> Присоединиться к комнате
-                        </button>
+                        
+                        <!-- Форма присоединения -->
+                        <div id="join-tab" class="tab-content" style="display: none;">
+                            <div class="form-group">
+                                <label for="username-join">Ваш никнейм:</label>
+                                <input type="text" id="username-join" placeholder="Введите ваш никнейм" maxlength="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="room-code-input">Код комнаты:</label>
+                                <input type="text" id="room-code-input" placeholder="Введите код комнаты" maxlength="8" style="text-transform: uppercase;">
+                            </div>
+                            <button id="join-room-btn" class="btn">
+                                <i class="fas fa-sign-in-alt"></i> Присоединиться
+                            </button>
+                        </div>
+                        
                         <div style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
-                            <p>Введите никнейм и начните играть.</p>
+                            <p>Никаких паролей! Просто введите никнейм и начните играть.</p>
                         </div>
                     </div>
                 </div>
@@ -595,7 +638,7 @@
     
     <footer>
         <div class="container">
-            <p>Бункер от markuss - Онлайн игра на выживание © 2025</p>
+            <p>Бункер 42 - Онлайн игра на выживание © 2023</p>
         </div>
     </footer>
 
@@ -644,8 +687,6 @@
         const gameScreen = document.getElementById('game-screen');
         const voteScreen = document.getElementById('vote-screen');
         
-        const usernameInput = document.getElementById('username');
-        const loginBtn = document.getElementById('login-btn');
         const userDisplay = document.getElementById('user-display');
         const logoutBtn = document.getElementById('logout-btn');
         
@@ -673,6 +714,17 @@
         const gameChatInput = document.getElementById('game-chat-input');
         const gameChatSend = document.getElementById('game-chat-send');
         
+        // Элементы вкладок
+        const tabCreate = document.getElementById('tab-create');
+        const tabJoin = document.getElementById('tab-join');
+        const createTab = document.getElementById('create-tab');
+        const joinTab = document.getElementById('join-tab');
+        const usernameCreate = document.getElementById('username-create');
+        const usernameJoin = document.getElementById('username-join');
+        const roomCodeInput = document.getElementById('room-code-input');
+        const createRoomBtn = document.getElementById('create-room-btn');
+        const joinRoomBtn = document.getElementById('join-room-btn');
+
         // WebSocket события
         socket.on('connect', () => {
             console.log('Connected to server');
@@ -688,6 +740,13 @@
             gameState.playerId = data.playerId;
             roomCodeDisplay.textContent = data.roomCode;
             addSystemMessage(`Комната создана! Код: ${data.roomCode}`, 'lobby');
+        });
+        
+        socket.on('room_joined', (data) => {
+            gameState.roomCode = data.roomCode;
+            gameState.playerId = data.playerId;
+            roomCodeDisplay.textContent = data.roomCode;
+            addSystemMessage(`Вы присоединились к комнате ${data.roomCode}`, 'lobby');
         });
         
         socket.on('players_update', (players) => {
@@ -733,6 +792,8 @@
 
         socket.on('error', (data) => {
             alert('Ошибка: ' + data.message);
+            authScreen.classList.add('active');
+            lobbyScreen.classList.remove('active');
         });
         
         // Функции игры
@@ -921,8 +982,24 @@
         }
         
         // Обработчики событий
-        loginBtn.addEventListener('click', function() {
-            const username = usernameInput.value.trim();
+        // Переключение вкладок
+        tabCreate.addEventListener('click', function() {
+            tabCreate.classList.add('active');
+            tabJoin.classList.remove('active');
+            createTab.style.display = 'block';
+            joinTab.style.display = 'none';
+        });
+
+        tabJoin.addEventListener('click', function() {
+            tabJoin.classList.add('active');
+            tabCreate.classList.remove('active');
+            joinTab.style.display = 'block';
+            createTab.style.display = 'none';
+        });
+
+        // Создание комнаты
+        createRoomBtn.addEventListener('click', function() {
+            const username = usernameCreate.value.trim();
             if (username.length < 2) {
                 alert('Введите никнейм (минимум 2 символа)');
                 return;
@@ -934,6 +1011,32 @@
             logoutBtn.style.display = 'block';
             
             socket.emit('create_room', username);
+            
+            authScreen.classList.remove('active');
+            lobbyScreen.classList.add('active');
+        });
+
+        // Присоединение к комнате
+        joinRoomBtn.addEventListener('click', function() {
+            const username = usernameJoin.value.trim();
+            const roomCode = roomCodeInput.value.trim().toUpperCase();
+            
+            if (username.length < 2) {
+                alert('Введите никнейм (минимум 2 символа)');
+                return;
+            }
+            
+            if (roomCode.length < 4) {
+                alert('Введите код комнаты (минимум 4 символа)');
+                return;
+            }
+            
+            gameState.currentUser = username;
+            userDisplay.textContent = username;
+            userDisplay.style.display = 'block';
+            logoutBtn.style.display = 'block';
+            
+            socket.emit('join_room', { roomCode, username });
             
             authScreen.classList.remove('active');
             lobbyScreen.classList.add('active');
@@ -953,7 +1056,9 @@
             voteScreen.classList.remove('active');
             authScreen.classList.add('active');
             
-            usernameInput.value = '';
+            usernameCreate.value = '';
+            usernameJoin.value = '';
+            roomCodeInput.value = '';
         });
         
         readyBtn.addEventListener('click', function() {
@@ -1074,9 +1179,8 @@
         setupChatHandlers();
         
         // Для демо - сразу заполняем поле
-        document.getElementById('username').value = 'Игрок' + Math.floor(Math.random() * 1000);
+        usernameCreate.value = 'Игрок' + Math.floor(Math.random() * 1000);
+        usernameJoin.value = 'Игрок' + Math.floor(Math.random() * 1000);
     </script>
 </body>
 </html>
-
-
