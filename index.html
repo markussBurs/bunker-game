@@ -506,6 +506,25 @@
             color: var(--text-secondary);
         }
         
+        .round-attributes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .round-attribute {
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .round-attribute.active {
+            background: var(--highlight);
+        }
+        
         @media (max-width: 768px) {
             .players-grid {
                 grid-template-columns: 1fr;
@@ -638,6 +657,9 @@
                         <div class="round-info" id="round-info">
                             Круг 1: Открыта только профессия
                         </div>
+                        <div class="round-attributes" id="round-attributes">
+                            <!-- Атрибуты текущего круга будут здесь -->
+                        </div>
                     </div>
 
                     <!-- Мои карты -->
@@ -710,9 +732,21 @@
     </footer>
 
     <script>
-        // Подключение к серверу
+        // Подключение к серверу с обработкой ошибок
         const SERVER_URL = 'https://bunker-server-uzz6.onrender.com';
-        const socket = io(SERVER_URL);
+        console.log('🔄 Подключаемся к серверу:', SERVER_URL);
+        
+        let socket;
+        
+        try {
+            socket = io(SERVER_URL, {
+                transports: ['websocket', 'polling'],
+                timeout: 10000
+            });
+        } catch (error) {
+            console.error('❌ Ошибка подключения:', error);
+            alert('Ошибка подключения к серверу');
+        }
         
         // Данные для игры
         const professions = ["Врач", "Инженер", "Ученый", "Солдат", "Фермер", "Повар", "Учитель", "Строитель"];
@@ -774,6 +808,7 @@
         const votePlayersGrid = document.getElementById('vote-players-grid');
         const myAttributesContainer = document.getElementById('my-attributes');
         const roundInfo = document.getElementById('round-info');
+        const roundAttributesContainer = document.getElementById('round-attributes');
         
         const readyBtn = document.getElementById('ready-btn');
         const startGameBtn = document.getElementById('start-game-btn');
@@ -874,8 +909,8 @@
             addSystemMessage('Игра началась!', 'game');
         });
 
-        socket.on('next_round', () => {
-            gameState.currentRound++;
+        socket.on('next_round', (data) => {
+            gameState.currentRound = data.round;
             updateRoundInfo();
             renderMyCards();
             renderPlayers();
@@ -901,6 +936,19 @@
             const currentAttributes = roundAttributes[gameState.currentRound - 1];
             const attributeNames = currentAttributes.map(attr => getAttributeName(attr)).join(', ');
             roundInfo.textContent = `Круг ${gameState.currentRound}: Открыты ${attributeNames}`;
+            
+            // Обновляем отображение доступных атрибутов
+            roundAttributesContainer.innerHTML = '';
+            
+            roundAttributes.forEach((roundAttrs, index) => {
+                const roundNumber = index + 1;
+                roundAttrs.forEach(attr => {
+                    const attrElement = document.createElement('div');
+                    attrElement.className = `round-attribute ${roundNumber === gameState.currentRound ? 'active' : ''}`;
+                    attrElement.textContent = getAttributeName(attr);
+                    roundAttributesContainer.appendChild(attrElement);
+                });
+            });
         }
 
         function canRevealAttribute(attribute) {
