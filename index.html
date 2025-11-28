@@ -466,7 +466,7 @@
     
     <main class="main-content">
         <div class="container">
-            <!-- Экран авторизации -->
+                        <!-- Экран авторизации -->
             <div id="auth-screen" class="screen active">
                 <div class="auth-screen">
                     <div class="auth-card">
@@ -475,8 +475,15 @@
                             <label for="username">Ваш никнейм:</label>
                             <input type="text" id="username" placeholder="Введите ваш никнейм" maxlength="20">
                         </div>
-                        <button id="login-btn" class="btn">
-                            <i class="fas fa-play"></i> Начать игру
+                        <div class="form-group">
+                            <label for="room-code-input">Код комнаты (если есть):</label>
+                            <input type="text" id="room-code-input" placeholder="Введите код комнаты" maxlength="8" style="text-transform: uppercase;">
+                        </div>
+                        <button id="create-room-btn" class="btn" style="margin-bottom: 10px;">
+                            <i class="fas fa-plus"></i> Создать комнату
+                        </button>
+                        <button id="join-room-btn" class="btn btn-secondary">
+                            <i class="fas fa-sign-in-alt"></i> Присоединиться к комнате
                         </button>
                         <div style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
                             <p>Никаких паролей! Просто введите никнейм и начните играть.</p>
@@ -1071,3 +1078,4 @@
     </script>
 </body>
 </html>
+
