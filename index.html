@@ -300,6 +300,11 @@
             background: var(--highlight);
         }
         
+        .reveal-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
         .game-controls {
             display: flex;
             justify-content: center;
@@ -454,6 +459,53 @@
             transition: all 0.3s ease;
         }
         
+        .round-info {
+            background: var(--accent);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        
+        .my-cards-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 2px solid var(--highlight);
+        }
+        
+        .my-cards-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--highlight);
+            text-align: center;
+        }
+        
+        .my-attributes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        
+        .my-attribute {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .my-attribute.revealed {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid var(--success);
+        }
+        
+        .my-attribute.locked .attribute-value {
+            color: var(--text-secondary);
+        }
+        
         @media (max-width: 768px) {
             .players-grid {
                 grid-template-columns: 1fr;
@@ -466,6 +518,10 @@
             .header-content {
                 flex-direction: column;
                 gap: 1rem;
+            }
+            
+            .my-attributes {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -579,6 +635,17 @@
                     <div class="situation-container">
                         <h2 class="situation-title">Текущая ситуация</h2>
                         <p id="current-situation">Ядерная война уничтожила цивилизацию. Вы оказались в бункере, способном вместить только 3 человек. Ресурсов хватит на 5 лет. Вам предстоит решить, кто останется в бункере, а кто будет изгнан на верную смерть.</p>
+                        <div class="round-info" id="round-info">
+                            Круг 1: Открыта только профессия
+                        </div>
+                    </div>
+
+                    <!-- Мои карты -->
+                    <div class="my-cards-container">
+                        <h2 class="my-cards-title">🎴 Мои характеристики</h2>
+                        <div class="my-attributes" id="my-attributes">
+                            <!-- Мои характеристики будут здесь -->
+                        </div>
                     </div>
                     
                     <h2>Участники бункера</h2>
@@ -592,8 +659,8 @@
                     </div>
                     
                     <div class="game-controls">
-                        <button id="reveal-all-btn" class="btn btn-secondary">
-                            <i class="fas fa-eye"></i> Открыть все мои характеристики
+                        <button id="next-round-btn" class="btn">
+                            <i class="fas fa-forward"></i> Следующий круг
                         </button>
                         <button id="game-vote-btn" class="btn">
                             <i class="fas fa-vote-yea"></i> Начать голосование
@@ -670,6 +737,15 @@
             "Обнаружен больной с заразным заболеванием. Нужно решить, как поступить с ним.",
             "Система вентиляции вышла из строя. Без кислорода осталось на 2 дня."
         ];
+
+        // Порядок раскрытия характеристик по кругам
+        const roundAttributes = [
+            ['profession'], // Круг 1
+            ['health', 'biology'], // Круг 2
+            ['hobby', 'luggage'], // Круг 3
+            ['phobia', 'character'], // Круг 4
+            ['additionalInfo'] // Круг 5
+        ];
         
         // Состояние игры
         let gameState = {
@@ -678,7 +754,9 @@
             players: [],
             gameStarted: false,
             currentSituation: 0,
-            playerId: null
+            playerId: null,
+            currentRound: 1,
+            myPlayer: null
         };
         
         // DOM элементы
@@ -694,11 +772,13 @@
         const playersGrid = document.getElementById('players-grid');
         const gamePlayersGrid = document.getElementById('game-players-grid');
         const votePlayersGrid = document.getElementById('vote-players-grid');
+        const myAttributesContainer = document.getElementById('my-attributes');
+        const roundInfo = document.getElementById('round-info');
         
         const readyBtn = document.getElementById('ready-btn');
         const startGameBtn = document.getElementById('start-game-btn');
         const leaveRoomBtn = document.getElementById('leave-room-btn');
-        const revealAllBtn = document.getElementById('reveal-all-btn');
+        const nextRoundBtn = document.getElementById('next-round-btn');
         const gameVoteBtn = document.getElementById('game-vote-btn');
         const confirmVoteBtn = document.getElementById('confirm-vote-btn');
         const cancelVoteBtn = document.getElementById('cancel-vote-btn');
@@ -755,7 +835,12 @@
                 ...p,
                 isCurrentUser: p.id === gameState.playerId
             }));
+            
+            // Сохраняем своего игрока
+            gameState.myPlayer = gameState.players.find(p => p.isCurrentUser);
+            
             renderPlayers();
+            renderMyCards();
         });
         
         socket.on('player_joined', (data) => {
@@ -779,11 +864,22 @@
         
         socket.on('game_started', () => {
             gameState.gameStarted = true;
+            gameState.currentRound = 1;
             lobbyScreen.classList.remove('active');
             gameScreen.classList.add('active');
             renderPlayers();
+            renderMyCards();
             renderSpecialCards();
+            updateRoundInfo();
             addSystemMessage('Игра началась!', 'game');
+        });
+
+        socket.on('next_round', () => {
+            gameState.currentRound++;
+            updateRoundInfo();
+            renderMyCards();
+            renderPlayers();
+            addSystemMessage(`Начался круг ${gameState.currentRound}`, 'game');
         });
         
         socket.on('chat_message', (data) => {
@@ -800,12 +896,24 @@
         function getRandomItem(array) {
             return array[Math.floor(Math.random() * array.length)];
         }
+
+        function updateRoundInfo() {
+            const currentAttributes = roundAttributes[gameState.currentRound - 1];
+            const attributeNames = currentAttributes.map(attr => getAttributeName(attr)).join(', ');
+            roundInfo.textContent = `Круг ${gameState.currentRound}: Открыты ${attributeNames}`;
+        }
+
+        function canRevealAttribute(attribute) {
+            if (!gameState.myPlayer) return false;
+            
+            // Проверяем, можно ли раскрывать эту характеристику в текущем круге
+            const currentRoundAttributes = roundAttributes[gameState.currentRound - 1];
+            return currentRoundAttributes.includes(attribute);
+        }
         
         function renderPlayers() {
             playersGrid.innerHTML = '';
             gamePlayersGrid.innerHTML = '';
-            
-            console.log('Rendering players:', gameState.players);
             
             gameState.players.forEach(player => {
                 const playerCard = createPlayerCard(player, 'lobby');
@@ -826,6 +934,53 @@
             } else {
                 startGameBtn.style.display = 'none';
             }
+        }
+
+        function renderMyCards() {
+            if (!gameState.myPlayer) return;
+            
+            myAttributesContainer.innerHTML = '';
+            
+            const attributes = [
+                { key: 'profession', name: 'Профессия', icon: 'fas fa-briefcase' },
+                { key: 'health', name: 'Здоровье', icon: 'fas fa-heartbeat' },
+                { key: 'biology', name: 'Биология', icon: 'fas fa-dna' },
+                { key: 'hobby', name: 'Хобби', icon: 'fas fa-puzzle-piece' },
+                { key: 'luggage', name: 'Багаж', icon: 'fas fa-suitcase' },
+                { key: 'phobia', name: 'Фобия', icon: 'fas fa-ghost' },
+                { key: 'character', name: 'Характер', icon: 'fas fa-user' },
+                { key: 'additionalInfo', name: 'Дополнительно', icon: 'fas fa-info-circle' }
+            ];
+            
+            attributes.forEach(attr => {
+                const isRevealed = gameState.myPlayer.revealed[attr.key];
+                const canReveal = canRevealAttribute(attr.key);
+                const value = isRevealed ? gameState.myPlayer[attr.key] : '???';
+                
+                const attributeElement = document.createElement('div');
+                attributeElement.className = `my-attribute ${isRevealed ? 'revealed' : ''} ${!canReveal && !isRevealed ? 'locked' : ''}`;
+                
+                attributeElement.innerHTML = `
+                    <div class="attribute-name">
+                        <i class="${attr.icon}"></i> ${attr.name}
+                    </div>
+                    <div class="attribute-value">${value}</div>
+                    ${!isRevealed && canReveal ? 
+                        `<button class="reveal-btn" data-attribute="${attr.key}"><i class="fas fa-eye"></i></button>` : 
+                        (!isRevealed ? `<button class="reveal-btn" disabled><i class="fas fa-lock"></i></button>` : '')
+                    }
+                `;
+                
+                myAttributesContainer.appendChild(attributeElement);
+            });
+
+            // Добавляем обработчики для кнопок раскрытия
+            myAttributesContainer.querySelectorAll('.reveal-btn:not(:disabled)').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const attribute = this.dataset.attribute;
+                    revealAttribute(gameState.myPlayer.id, attribute);
+                });
+            });
         }
         
         function createPlayerCard(player, context) {
@@ -853,8 +1008,6 @@
                     <div class="attribute ${isRevealed ? '' : 'hidden'}">
                         <span class="attribute-name"><i class="${attr.icon}"></i> ${attr.name}:</span>
                         <span class="attribute-value">${value}</span>
-                        ${player.isCurrentUser && !isRevealed ? 
-                            `<button class="reveal-btn" data-attribute="${attr.key}"><i class="fas fa-eye"></i></button>` : ''}
                     </div>
                 `;
             });
@@ -869,23 +1022,15 @@
                 </div>
             `;
             
-            if (player.isCurrentUser) {
-                card.querySelectorAll('.reveal-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const attribute = this.dataset.attribute;
-                        revealAttribute(player.id, attribute);
-                    });
-                });
-            }
-            
             return card;
         }
         
         function revealAttribute(playerId, attribute) {
             const player = gameState.players.find(p => p.id === playerId);
-            if (player && player.isCurrentUser) {
+            if (player && player.isCurrentUser && canRevealAttribute(attribute)) {
                 player.revealed[attribute] = true;
                 renderPlayers();
+                renderMyCards();
                 socket.emit('reveal_attribute', {
                     attribute: attribute
                 });
@@ -905,22 +1050,6 @@
                 additionalInfo: 'дополнительную информацию'
             };
             return names[key] || key;
-        }
-        
-        function revealAllAttributes(playerId) {
-            const player = gameState.players.find(p => p.id === playerId);
-            if (player && player.isCurrentUser) {
-                Object.keys(player.revealed).forEach(key => {
-                    if (!player.revealed[key]) {
-                        player.revealed[key] = true;
-                        socket.emit('reveal_attribute', {
-                            attribute: key
-                        });
-                    }
-                });
-                renderPlayers();
-                addSystemMessage('Вы раскрыли все свои характеристики', 'game');
-            }
         }
         
         function addSystemMessage(text, context) {
@@ -1047,6 +1176,8 @@
             gameState.currentUser = null;
             gameState.players = [];
             gameState.gameStarted = false;
+            gameState.currentRound = 1;
+            gameState.myPlayer = null;
             
             userDisplay.style.display = 'none';
             logoutBtn.style.display = 'none';
@@ -1068,17 +1199,14 @@
         startGameBtn.addEventListener('click', function() {
             socket.emit('start_game');
         });
+
+        nextRoundBtn.addEventListener('click', function() {
+            socket.emit('next_round');
+        });
         
         leaveRoomBtn.addEventListener('click', function() {
             if (confirm('Вы уверены, что хотите покинуть комнату?')) {
                 logoutBtn.click();
-            }
-        });
-        
-        revealAllBtn.addEventListener('click', function() {
-            const currentPlayer = gameState.players.find(p => p.isCurrentUser);
-            if (currentPlayer) {
-                revealAllAttributes(currentPlayer.id);
             }
         });
         
