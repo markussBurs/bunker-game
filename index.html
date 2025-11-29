@@ -919,8 +919,7 @@
         playerId: null,
         currentRound: 1,
         myPlayer: null,
-        selectedVote: null,
-        hasRevealedThisRound: false
+        selectedVote: null
     };
     
     // DOM элементы
@@ -1016,11 +1015,6 @@
         
         gameState.myPlayer = gameState.players.find(p => p.isCurrentUser);
         
-        // Сбрасываем флаг раскрытия при новом круге
-        if (gameState.myPlayer) {
-            gameState.hasRevealedThisRound = checkIfRevealedThisRound();
-        }
-        
         renderPlayers();
         renderMyCards();
         renderAttributesTable();
@@ -1041,7 +1035,6 @@
     
     socket.on('next_round', (data) => {
         gameState.currentRound = data.round;
-        gameState.hasRevealedThisRound = false;
         
         updateRoundInfo();
         renderMyCards();
@@ -1121,26 +1114,6 @@
         startGameBtn.style.display = isHost && !gameState.gameStarted ? 'block' : 'none';
     }
     
-    function checkIfRevealedThisRound() {
-        if (!gameState.myPlayer) return false;
-        
-        const currentRoundAttrs = roundAttributes[gameState.currentRound - 1];
-        return currentRoundAttrs.some(attr => 
-            gameState.myPlayer.revealed[attr] && 
-            !wasRevealedInPreviousRounds(attr)
-        );
-    }
-    
-    function wasRevealedInPreviousRounds(attribute) {
-        for (let i = 0; i < gameState.currentRound - 1; i++) {
-            const roundAttrs = roundAttributes[i];
-            if (roundAttrs.includes(attribute) && gameState.myPlayer.revealed[attribute]) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     function updateRoundInfo() {
         const currentRound = gameState.currentRound;
         let roundText = '';
@@ -1192,35 +1165,13 @@
             }
         } else if (currentRound >= 2 && currentRound <= 4) {
             if (isHost) {
-                const allRevealedOne = gameState.players.every(player => 
-                    getRevealedCountThisRound(player) >= 1
-                );
-                if (allRevealedOne) {
-                    continueGameBtn.style.display = 'block';
-                }
+                continueGameBtn.style.display = 'block';
             }
         } else if (currentRound === 5) {
             if (isHost) {
                 startVoteBtn.style.display = 'block';
             }
         }
-    }
-    
-    function getRevealedCountThisRound(player) {
-        const currentRoundAttrs = roundAttributes[gameState.currentRound - 1];
-        return currentRoundAttrs.filter(attr => 
-            player.revealed[attr] && !wasRevealedInPreviousRoundsForPlayer(player, attr)
-        ).length;
-    }
-    
-    function wasRevealedInPreviousRoundsForPlayer(player, attribute) {
-        for (let i = 0; i < gameState.currentRound - 1; i++) {
-            const roundAttrs = roundAttributes[i];
-            if (roundAttrs.includes(attribute) && player.revealed[attribute]) {
-                return true;
-            }
-        }
-        return false;
     }
     
     function renderMyCards() {
@@ -1242,7 +1193,7 @@
         attributes.forEach(attr => {
             const value = gameState.myPlayer[attr.key];
             const isRevealed = gameState.myPlayer.revealed[attr.key];
-            const canReveal = canRevealAttribute(attr.key) && !isRevealed && !gameState.hasRevealedThisRound;
+            const canReveal = canRevealAttribute(attr.key) && !isRevealed;
             
             const attributeElement = document.createElement('div');
             attributeElement.className = `my-attribute ${isRevealed ? 'revealed' : ''}`;
@@ -1302,7 +1253,7 @@
             attributes.forEach(attr => {
                 const cell = document.createElement('td');
                 const isRevealed = player.revealed[attr];
-                const canReveal = canRevealAttribute(attr) && player.isCurrentUser && !isRevealed && !gameState.hasRevealedThisRound;
+                const canReveal = canRevealAttribute(attr) && player.isCurrentUser && !isRevealed;
                 
                 cell.className = `attribute-cell ${isRevealed ? 'revealed' : 'hidden'}`;
                 
@@ -1336,7 +1287,6 @@
     
     function canRevealAttribute(attribute) {
         if (!gameState.myPlayer) return false;
-        if (gameState.hasRevealedThisRound) return false;
         
         const currentRoundAttributes = roundAttributes[gameState.currentRound - 1];
         return currentRoundAttributes.includes(attribute);
@@ -1344,20 +1294,9 @@
     
     function revealAttribute(attribute) {
         if (gameState.myPlayer && canRevealAttribute(attribute)) {
-            gameState.myPlayer.revealed[attribute] = true;
-            gameState.hasRevealedThisRound = true;
-            
-            renderPlayers();
-            renderMyCards();
-            renderAttributesTable();
             socket.emit('reveal_attribute', {
                 attribute: attribute
             });
-            addSystemMessage(`Вы раскрыли свою ${getAttributeName(attribute)}`, 'game');
-            
-            if (gameState.currentRound === 1 && attribute === 'profession') {
-                updateGameControls();
-            }
         }
     }
     
