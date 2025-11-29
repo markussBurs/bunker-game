@@ -920,13 +920,95 @@
         currentRound: 1,
         myPlayer: null,
         selectedVote: null,
-        hasRevealedThisRound: false // Флаг для отслеживания раскрытия в текущем круге
+        hasRevealedThisRound: false
     };
     
-    // ... (остальные DOM элементы без изменений)
-
+    // DOM элементы
+    const authScreen = document.getElementById('auth-screen');
+    const lobbyScreen = document.getElementById('lobby-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const voteScreen = document.getElementById('vote-screen');
+    
+    const tabCreate = document.getElementById('tab-create');
+    const tabJoin = document.getElementById('tab-join');
+    const createTab = document.getElementById('create-tab');
+    const joinTab = document.getElementById('join-tab');
+    
+    const usernameCreate = document.getElementById('username-create');
+    const usernameJoin = document.getElementById('username-join');
+    const roomCodeInput = document.getElementById('room-code-input');
+    
+    const createRoomBtn = document.getElementById('create-room-btn');
+    const joinRoomBtn = document.getElementById('join-room-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userDisplay = document.getElementById('user-display');
+    
+    const roomCodeDisplay = document.getElementById('room-code');
+    const playersGrid = document.getElementById('players-grid');
+    const readyBtn = document.getElementById('ready-btn');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const leaveRoomBtn = document.getElementById('leave-room-btn');
+    
+    const lobbyChat = document.getElementById('lobby-chat');
+    const lobbyChatInput = document.getElementById('lobby-chat-input');
+    const lobbyChatSend = document.getElementById('lobby-chat-send');
+    
+    const roundInfo = document.getElementById('round-info');
+    const roundAttributesContainer = document.getElementById('round-attributes');
+    const myAttributesContainer = document.getElementById('my-attributes');
+    const attributesTableBody = document.getElementById('attributes-table-body');
+    
+    const revealProfessionBtn = document.getElementById('reveal-profession-btn');
+    const continueGameBtn = document.getElementById('continue-game-btn');
+    const startVoteBtn = document.getElementById('start-vote-btn');
+    
+    const gameChat = document.getElementById('game-chat');
+    const gameChatInput = document.getElementById('game-chat-input');
+    const gameChatSend = document.getElementById('game-chat-send');
+    
+    const votePlayersGrid = document.getElementById('vote-players-grid');
+    const confirmVoteBtn = document.getElementById('confirm-vote-btn');
+    
+    // Socket события
+    socket.on('connect', () => {
+        console.log('✅ Подключен к серверу');
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('❌ Отключен от сервера');
+    });
+    
+    socket.on('error', (data) => {
+        console.error('❌ Ошибка:', data.message);
+        alert(data.message);
+    });
+    
+    socket.on('room_created', (data) => {
+        console.log('✅ Комната создана:', data);
+        gameState.roomCode = data.roomCode;
+        gameState.playerId = data.playerId;
+        roomCodeDisplay.textContent = data.roomCode;
+    });
+    
+    socket.on('room_joined', (data) => {
+        console.log('✅ Присоединился к комнате:', data);
+        gameState.roomCode = data.roomCode;
+        gameState.playerId = data.playerId;
+        roomCodeDisplay.textContent = data.roomCode;
+    });
+    
+    socket.on('player_joined', (data) => {
+        console.log('👋 Игрок присоединился:', data.username);
+        addSystemMessage(`Игрок ${data.username} присоединился к комнате`, 'lobby');
+    });
+    
+    socket.on('player_left', (data) => {
+        console.log('👋 Игрок покинул:', data.username);
+        addSystemMessage(`Игрок ${data.username} покинул комнату`, 'lobby');
+    });
+    
     socket.on('players_update', (players) => {
-        console.log('Players update received:', players);
+        console.log('🔄 Обновление игроков:', players);
         gameState.players = players.map(p => ({
             ...p,
             isCurrentUser: p.id === gameState.playerId
@@ -945,9 +1027,21 @@
         updateGameControls();
     });
     
+    socket.on('game_started', () => {
+        console.log('🎮 Игра началась!');
+        gameState.gameStarted = true;
+        gameState.currentRound = 1;
+        
+        lobbyScreen.classList.remove('active');
+        gameScreen.classList.add('active');
+        
+        updateRoundInfo();
+        addSystemMessage('🎮 Игра началась!', 'game');
+    });
+    
     socket.on('next_round', (data) => {
         gameState.currentRound = data.round;
-        gameState.hasRevealedThisRound = false; // Сбрасываем флаг при новом круге
+        gameState.hasRevealedThisRound = false;
         
         updateRoundInfo();
         renderMyCards();
@@ -956,7 +1050,77 @@
         updateGameControls();
         addSystemMessage(`Начался круг ${gameState.currentRound}`, 'game');
     });
-
+    
+    socket.on('attribute_revealed', (data) => {
+        console.log('🔓 Характеристика раскрыта:', data);
+        const player = gameState.players.find(p => p.id === data.playerId);
+        if (player) {
+            addSystemMessage(`Игрок ${player.username} раскрыл ${getAttributeName(data.attribute)}`, 'game');
+        }
+    });
+    
+    socket.on('start_voting', () => {
+        console.log('🗳️ Началось голосование');
+        gameScreen.classList.remove('active');
+        voteScreen.classList.add('active');
+        renderVotePlayers();
+        addSystemMessage('🗳️ Началось голосование!', 'game');
+    });
+    
+    socket.on('player_eliminated', (data) => {
+        console.log('👋 Игрок исключен:', data);
+        addSystemMessage(`Игрок ${data.username} исключен из бункера (${data.voteCount} голосов)`, 'game');
+    });
+    
+    socket.on('game_ended', (data) => {
+        console.log('🎉 Игра завершена:', data);
+        alert(`🎉 Игра завершена! Победители: ${data.winners.join(', ')}`);
+        resetGameState();
+    });
+    
+    socket.on('chat_message', (data) => {
+        console.log('💬 Сообщение чата:', data);
+        addChatMessage(data.username, data.message, data.context);
+    });
+    
+    // Функции рендеринга
+    function renderPlayers() {
+        playersGrid.innerHTML = '';
+        
+        gameState.players.forEach(player => {
+            const card = document.createElement('div');
+            card.className = `player-card card ${player.ready ? 'ready' : ''}`;
+            
+            let revealedAttributes = '';
+            Object.entries(player.revealed).forEach(([key, isRevealed]) => {
+                if (isRevealed) {
+                    revealedAttributes += `<div class="attribute"><span class="attribute-name">${getAttributeName(key)}:</span> <span class="attribute-value">${player[key]}</span></div>`;
+                }
+            });
+            
+            card.innerHTML = `
+                <div class="player-header">
+                    <div class="player-name">
+                        ${player.username} 
+                        ${player.isCurrentUser ? '(Вы)' : ''}
+                        ${player.isHost ? '👑' : ''}
+                    </div>
+                    <div class="player-status ${player.ready ? 'ready' : ''}">
+                        ${player.ready ? 'Готов' : 'Не готов'}
+                    </div>
+                </div>
+                <div class="attributes-list">
+                    ${revealedAttributes || '<div class="attribute">Нет раскрытых характеристик</div>'}
+                </div>
+            `;
+            playersGrid.appendChild(card);
+        });
+        
+        // Показываем кнопку начала игры только для хоста
+        const isHost = gameState.myPlayer && gameState.myPlayer.isHost;
+        startGameBtn.style.display = isHost && !gameState.gameStarted ? 'block' : 'none';
+    }
+    
     function checkIfRevealedThisRound() {
         if (!gameState.myPlayer) return false;
         
@@ -966,7 +1130,7 @@
             !wasRevealedInPreviousRounds(attr)
         );
     }
-
+    
     function wasRevealedInPreviousRounds(attribute) {
         for (let i = 0; i < gameState.currentRound - 1; i++) {
             const roundAttrs = roundAttributes[i];
@@ -976,7 +1140,7 @@
         }
         return false;
     }
-
+    
     function updateRoundInfo() {
         const currentRound = gameState.currentRound;
         let roundText = '';
@@ -1009,7 +1173,7 @@
             });
         });
     }
-
+    
     function updateGameControls() {
         if (!gameState.gameStarted || !gameState.myPlayer) return;
         
@@ -1021,14 +1185,12 @@
         startVoteBtn.style.display = 'none';
         
         if (currentRound === 1) {
-            // Первый круг - только профессия
             if (!gameState.myPlayer.revealed.profession) {
                 revealProfessionBtn.style.display = 'block';
             } else if (isHost) {
                 continueGameBtn.style.display = 'block';
             }
         } else if (currentRound >= 2 && currentRound <= 4) {
-            // Круги 2-4 - хост может продолжить, если все раскрыли по одной характеристике
             if (isHost) {
                 const allRevealedOne = gameState.players.every(player => 
                     getRevealedCountThisRound(player) >= 1
@@ -1038,20 +1200,19 @@
                 }
             }
         } else if (currentRound === 5) {
-            // Круг 5 - голосование
             if (isHost) {
                 startVoteBtn.style.display = 'block';
             }
         }
     }
-
+    
     function getRevealedCountThisRound(player) {
         const currentRoundAttrs = roundAttributes[gameState.currentRound - 1];
         return currentRoundAttrs.filter(attr => 
             player.revealed[attr] && !wasRevealedInPreviousRoundsForPlayer(player, attr)
         ).length;
     }
-
+    
     function wasRevealedInPreviousRoundsForPlayer(player, attribute) {
         for (let i = 0; i < gameState.currentRound - 1; i++) {
             const roundAttrs = roundAttributes[i];
@@ -1061,7 +1222,7 @@
         }
         return false;
     }
-
+    
     function renderMyCards() {
         if (!gameState.myPlayer) return;
         
@@ -1103,14 +1264,13 @@
                 ${statusText}
             `;
             
-            // Добавляем кнопку раскрытия если можно
             if (canReveal) {
                 const revealBtn = document.createElement('button');
                 revealBtn.className = 'reveal-table-btn';
                 revealBtn.innerHTML = '<i class="fas fa-eye"></i>';
                 revealBtn.title = `Раскрыть ${attr.name}`;
                 revealBtn.addEventListener('click', () => {
-                    revealAttribute(gameState.myPlayer.id, attr.key);
+                    revealAttribute(attr.key);
                 });
                 
                 const buttonContainer = document.createElement('div');
@@ -1123,7 +1283,7 @@
             myAttributesContainer.appendChild(attributeElement);
         });
     }
-
+    
     function renderAttributesTable() {
         if (!gameState.gameStarted) return;
         
@@ -1169,24 +1329,23 @@
         attributesTableBody.querySelectorAll('.reveal-table-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const attribute = this.dataset.attribute;
-                revealAttribute(gameState.myPlayer.id, attribute);
+                revealAttribute(attribute);
             });
         });
     }
     
     function canRevealAttribute(attribute) {
         if (!gameState.myPlayer) return false;
-        if (gameState.hasRevealedThisRound) return false; // Уже раскрыл в этом круге
+        if (gameState.hasRevealedThisRound) return false;
         
         const currentRoundAttributes = roundAttributes[gameState.currentRound - 1];
         return currentRoundAttributes.includes(attribute);
     }
     
-    function revealAttribute(playerId, attribute) {
-        const player = gameState.players.find(p => p.id === playerId);
-        if (player && player.isCurrentUser && canRevealAttribute(attribute)) {
-            player.revealed[attribute] = true;
-            gameState.hasRevealedThisRound = true; // Помечаем что раскрыл в этом круге
+    function revealAttribute(attribute) {
+        if (gameState.myPlayer && canRevealAttribute(attribute)) {
+            gameState.myPlayer.revealed[attribute] = true;
+            gameState.hasRevealedThisRound = true;
             
             renderPlayers();
             renderMyCards();
@@ -1196,257 +1355,257 @@
             });
             addSystemMessage(`Вы раскрыли свою ${getAttributeName(attribute)}`, 'game');
             
-            // Если первый круг и раскрыли профессию - проверяем можно ли продолжать
             if (gameState.currentRound === 1 && attribute === 'profession') {
                 updateGameControls();
             }
         }
     }
-        function getAttributeName(key) {
-            const names = {
-                profession: 'Профессия',
-                health: 'Здоровье', 
-                biology: 'Биология',
-                hobby: 'Хобби',
-                luggage: 'Багаж',
-                phobia: 'Фобия',
-                character: 'Характер',
-                additionalInfo: 'Доп. информация'
-            };
-            return names[key] || key;
-        }
+    
+    function getAttributeName(key) {
+        const names = {
+            profession: 'Профессия',
+            health: 'Здоровье', 
+            biology: 'Биология',
+            hobby: 'Хобби',
+            luggage: 'Багаж',
+            phobia: 'Фобия',
+            character: 'Характер',
+            additionalInfo: 'Доп. информация'
+        };
+        return names[key] || key;
+    }
+    
+    function addSystemMessage(text, context) {
+        const message = document.createElement('div');
+        message.className = 'message system';
+        message.textContent = text;
         
-        function addSystemMessage(text, context) {
-            const message = document.createElement('div');
-            message.className = 'message system';
-            message.textContent = text;
+        if (context === 'lobby') {
+            lobbyChat.appendChild(message);
+            lobbyChat.scrollTop = lobbyChat.scrollHeight;
+        } else {
+            gameChat.appendChild(message);
+            gameChat.scrollTop = gameChat.scrollHeight;
+        }
+    }
+    
+    function addChatMessage(sender, text, context) {
+        const message = document.createElement('div');
+        message.className = 'message';
+        message.innerHTML = `<span class="message-sender">${sender}:</span> ${text}`;
+        
+        if (context === 'lobby') {
+            lobbyChat.appendChild(message);
+            lobbyChat.scrollTop = lobbyChat.scrollHeight;
+        } else {
+            gameChat.appendChild(message);
+            gameChat.scrollTop = gameChat.scrollHeight;
+        }
+    }
+    
+    function renderVotePlayers() {
+        votePlayersGrid.innerHTML = '';
+        gameState.selectedVote = null;
+        confirmVoteBtn.style.display = 'none';
+        
+        gameState.players.forEach(player => {
+            const card = document.createElement('div');
+            card.className = 'player-card card vote-player-card';
+            card.dataset.playerId = player.id;
             
-            if (context === 'lobby') {
-                lobbyChat.appendChild(message);
-                lobbyChat.scrollTop = lobbyChat.scrollHeight;
-            } else {
-                gameChat.appendChild(message);
-                gameChat.scrollTop = gameChat.scrollHeight;
-            }
-        }
-        
-        function addChatMessage(sender, text, context) {
-            const message = document.createElement('div');
-            message.className = 'message';
-            message.innerHTML = `<span class="message-sender">${sender}:</span> ${text}`;
+            let revealedAttributes = '';
+            Object.entries(player.revealed).forEach(([key, isRevealed]) => {
+                if (isRevealed) {
+                    revealedAttributes += `<div class="attribute"><span class="attribute-name">${getAttributeName(key)}:</span> <span class="attribute-value">${player[key]}</span></div>`;
+                }
+            });
             
-            if (context === 'lobby') {
-                lobbyChat.appendChild(message);
-                lobbyChat.scrollTop = lobbyChat.scrollHeight;
-            } else {
-                gameChat.appendChild(message);
-                gameChat.scrollTop = gameChat.scrollHeight;
-            }
+            card.innerHTML = `
+                <div class="player-header">
+                    <div class="player-name">${player.username} ${player.isCurrentUser ? '(Вы)' : ''}</div>
+                </div>
+                <div class="attributes-list">
+                    ${revealedAttributes || '<div class="attribute">Нет раскрытых характеристик</div>'}
+                </div>
+                <button class="btn vote-select-btn" data-player-id="${player.id}" ${player.isCurrentUser ? 'disabled' : ''}>
+                    <i class="fas fa-user-minus"></i> Выбрать для исключения
+                </button>
+            `;
+            votePlayersGrid.appendChild(card);
+        });
+        
+        document.querySelectorAll('.vote-select-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const playerId = this.dataset.playerId;
+                gameState.selectedVote = playerId;
+                
+                document.querySelectorAll('.vote-player-card').forEach(card => {
+                    card.style.borderColor = 'var(--border)';
+                });
+                
+                this.closest('.vote-player-card').style.borderColor = 'var(--highlight)';
+                
+                confirmVoteBtn.style.display = 'block';
+            });
+        });
+    }
+    
+    // Обработчики событий
+    tabCreate.addEventListener('click', function() {
+        tabCreate.classList.add('active');
+        tabJoin.classList.remove('active');
+        createTab.style.display = 'block';
+        joinTab.style.display = 'none';
+    });
+
+    tabJoin.addEventListener('click', function() {
+        tabJoin.classList.add('active');
+        tabCreate.classList.remove('active');
+        joinTab.style.display = 'block';
+        createTab.style.display = 'none';
+    });
+
+    createRoomBtn.addEventListener('click', function() {
+        const username = usernameCreate.value.trim();
+        if (username.length < 2) {
+            alert('Введите никнейм (минимум 2 символа)');
+            return;
         }
         
-        function renderVotePlayers() {
-            votePlayersGrid.innerHTML = '';
-            gameState.selectedVote = null;
+        gameState.currentUser = username;
+        userDisplay.textContent = username;
+        userDisplay.style.display = 'block';
+        logoutBtn.style.display = 'block';
+        
+        socket.emit('create_room', username);
+        
+        authScreen.classList.remove('active');
+        lobbyScreen.classList.add('active');
+    });
+
+    joinRoomBtn.addEventListener('click', function() {
+        const username = usernameJoin.value.trim();
+        const roomCode = roomCodeInput.value.trim().toUpperCase();
+        
+        if (username.length < 2) {
+            alert('Введите никнейм (минимум 2 символа)');
+            return;
+        }
+        
+        if (roomCode.length < 4) {
+            alert('Введите код комнаты (минимум 4 символа)');
+            return;
+        }
+        
+        gameState.currentUser = username;
+        userDisplay.textContent = username;
+        userDisplay.style.display = 'block';
+        logoutBtn.style.display = 'block';
+        
+        socket.emit('join_room', { roomCode, username });
+        
+        authScreen.classList.remove('active');
+        lobbyScreen.classList.add('active');
+    });
+    
+    logoutBtn.addEventListener('click', function() {
+        socket.emit('leave_room');
+        resetGameState();
+    });
+    
+    readyBtn.addEventListener('click', function() {
+        socket.emit('toggle_ready');
+    });
+    
+    startGameBtn.addEventListener('click', function() {
+        socket.emit('start_game');
+    });
+
+    revealProfessionBtn.addEventListener('click', function() {
+        revealAttribute('profession');
+    });
+
+    continueGameBtn.addEventListener('click', function() {
+        socket.emit('next_round');
+    });
+
+    startVoteBtn.addEventListener('click', function() {
+        socket.emit('start_voting');
+    });
+    
+    leaveRoomBtn.addEventListener('click', function() {
+        if (confirm('Вы уверены, что хотите покинуть комнату?')) {
+            logoutBtn.click();
+        }
+    });
+    
+    confirmVoteBtn.addEventListener('click', function() {
+        if (gameState.selectedVote) {
+            socket.emit('cast_vote', { targetPlayerId: gameState.selectedVote });
+            addSystemMessage('Вы проголосовали!', 'game');
             confirmVoteBtn.style.display = 'none';
-            
-            gameState.players.forEach(player => {
-                const card = document.createElement('div');
-                card.className = 'player-card card vote-player-card';
-                card.dataset.playerId = player.id;
-                
-                let revealedAttributes = '';
-                Object.entries(player.revealed).forEach(([key, isRevealed]) => {
-                    if (isRevealed) {
-                        revealedAttributes += `<div class="attribute"><span class="attribute-name">${getAttributeName(key)}:</span> <span class="attribute-value">${player[key]}</span></div>`;
-                    }
-                });
-                
-                card.innerHTML = `
-                    <div class="player-header">
-                        <div class="player-name">${player.username} ${player.isCurrentUser ? '(Вы)' : ''}</div>
-                    </div>
-                    <div class="attributes-list">
-                        ${revealedAttributes || '<div class="attribute">Нет раскрытых характеристик</div>'}
-                    </div>
-                    <button class="btn vote-select-btn" data-player-id="${player.id}" ${player.isCurrentUser ? 'disabled' : ''}>
-                        <i class="fas fa-user-minus"></i> Выбрать для исключения
-                    </button>
-                `;
-                votePlayersGrid.appendChild(card);
+        }
+    });
+    
+    function resetGameState() {
+        gameState.currentUser = null;
+        gameState.players = [];
+        gameState.gameStarted = false;
+        gameState.currentRound = 1;
+        gameState.myPlayer = null;
+        gameState.selectedVote = null;
+        
+        userDisplay.style.display = 'none';
+        logoutBtn.style.display = 'none';
+        
+        lobbyScreen.classList.remove('active');
+        gameScreen.classList.remove('active');
+        voteScreen.classList.remove('active');
+        authScreen.classList.add('active');
+        
+        usernameCreate.value = '';
+        usernameJoin.value = '';
+        roomCodeInput.value = '';
+    }
+    
+    function setupChatHandlers() {
+        lobbyChatSend.addEventListener('click', sendLobbyMessage);
+        lobbyChatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendLobbyMessage();
+        });
+        
+        gameChatSend.addEventListener('click', sendGameMessage);
+        gameChatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendGameMessage();
+        });
+    }
+    
+    function sendLobbyMessage() {
+        const message = lobbyChatInput.value.trim();
+        if (message && gameState.currentUser) {
+            socket.emit('chat_message', {
+                message: message,
+                context: 'lobby'
             });
-            
-            document.querySelectorAll('.vote-select-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const playerId = this.dataset.playerId;
-                    gameState.selectedVote = playerId;
-                    
-                    document.querySelectorAll('.vote-player-card').forEach(card => {
-                        card.style.borderColor = 'var(--border)';
-                    });
-                    
-                    this.closest('.vote-player-card').style.borderColor = 'var(--highlight)';
-                    
-                    confirmVoteBtn.style.display = 'block';
-                });
+            lobbyChatInput.value = '';
+        }
+    }
+    
+    function sendGameMessage() {
+        const message = gameChatInput.value.trim();
+        if (message && gameState.currentUser) {
+            socket.emit('chat_message', {
+                message: message,
+                context: 'game'
             });
+            gameChatInput.value = '';
         }
-        
-        tabCreate.addEventListener('click', function() {
-            tabCreate.classList.add('active');
-            tabJoin.classList.remove('active');
-            createTab.style.display = 'block';
-            joinTab.style.display = 'none';
-        });
-
-        tabJoin.addEventListener('click', function() {
-            tabJoin.classList.add('active');
-            tabCreate.classList.remove('active');
-            joinTab.style.display = 'block';
-            createTab.style.display = 'none';
-        });
-
-        createRoomBtn.addEventListener('click', function() {
-            const username = usernameCreate.value.trim();
-            if (username.length < 2) {
-                alert('Введите никнейм (минимум 2 символа)');
-                return;
-            }
-            
-            gameState.currentUser = username;
-            userDisplay.textContent = username;
-            userDisplay.style.display = 'block';
-            logoutBtn.style.display = 'block';
-            
-            socket.emit('create_room', username);
-            
-            authScreen.classList.remove('active');
-            lobbyScreen.classList.add('active');
-        });
-
-        joinRoomBtn.addEventListener('click', function() {
-            const username = usernameJoin.value.trim();
-            const roomCode = roomCodeInput.value.trim().toUpperCase();
-            
-            if (username.length < 2) {
-                alert('Введите никнейм (минимум 2 символа)');
-                return;
-            }
-            
-            if (roomCode.length < 4) {
-                alert('Введите код комнаты (минимум 4 символа)');
-                return;
-            }
-            
-            gameState.currentUser = username;
-            userDisplay.textContent = username;
-            userDisplay.style.display = 'block';
-            logoutBtn.style.display = 'block';
-            
-            socket.emit('join_room', { roomCode, username });
-            
-            authScreen.classList.remove('active');
-            lobbyScreen.classList.add('active');
-        });
-        
-        logoutBtn.addEventListener('click', function() {
-            socket.emit('leave_room');
-            resetGameState();
-        });
-        
-        readyBtn.addEventListener('click', function() {
-            socket.emit('toggle_ready');
-        });
-        
-        startGameBtn.addEventListener('click', function() {
-            socket.emit('start_game');
-        });
-
-        revealProfessionBtn.addEventListener('click', function() {
-            socket.emit('reveal_attribute', { attribute: 'profession' });
-        });
-
-        continueGameBtn.addEventListener('click', function() {
-            socket.emit('next_round');
-        });
-
-        startVoteBtn.addEventListener('click', function() {
-            socket.emit('start_voting');
-        });
-        
-        leaveRoomBtn.addEventListener('click', function() {
-            if (confirm('Вы уверены, что хотите покинуть комнату?')) {
-                logoutBtn.click();
-            }
-        });
-        
-        confirmVoteBtn.addEventListener('click', function() {
-            if (gameState.selectedVote) {
-                socket.emit('cast_vote', { targetPlayerId: gameState.selectedVote });
-                addSystemMessage('Вы проголосовали!', 'game');
-                confirmVoteBtn.style.display = 'none';
-            }
-        });
-        
-        function resetGameState() {
-            gameState.currentUser = null;
-            gameState.players = [];
-            gameState.gameStarted = false;
-            gameState.currentRound = 1;
-            gameState.myPlayer = null;
-            gameState.selectedVote = null;
-            
-            userDisplay.style.display = 'none';
-            logoutBtn.style.display = 'none';
-            
-            lobbyScreen.classList.remove('active');
-            gameScreen.classList.remove('active');
-            voteScreen.classList.remove('active');
-            authScreen.classList.add('active');
-            
-            usernameCreate.value = '';
-            usernameJoin.value = '';
-            roomCodeInput.value = '';
-        }
-        
-        function setupChatHandlers() {
-            lobbyChatSend.addEventListener('click', sendLobbyMessage);
-            lobbyChatInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendLobbyMessage();
-            });
-            
-            gameChatSend.addEventListener('click', sendGameMessage);
-            gameChatInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendGameMessage();
-            });
-        }
-        
-        function sendLobbyMessage() {
-            const message = lobbyChatInput.value.trim();
-            if (message && gameState.currentUser) {
-                socket.emit('chat_message', {
-                    message: message,
-                    context: 'lobby'
-                });
-                lobbyChatInput.value = '';
-            }
-        }
-        
-        function sendGameMessage() {
-            const message = gameChatInput.value.trim();
-            if (message && gameState.currentUser) {
-                socket.emit('chat_message', {
-                    message: message,
-                    context: 'game'
-                });
-                gameChatInput.value = '';
-            }
-        }
-        
-        setupChatHandlers();
-        
-        usernameCreate.value = 'Игрок' + Math.floor(Math.random() * 1000);
-        usernameJoin.value = 'Игрок' + Math.floor(Math.random() * 1000);
-    </script>
+    }
+    
+    setupChatHandlers();
+    
+    usernameCreate.value = 'Игрок' + Math.floor(Math.random() * 1000);
+    usernameJoin.value = 'Игрок' + Math.floor(Math.random() * 1000);
+</script>
 </body>
 </html>
-
