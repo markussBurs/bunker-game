@@ -930,7 +930,6 @@
         const logoutBtn = document.getElementById('logout-btn');
         const roomCodeDisplay = document.getElementById('room-code');
         const playersGrid = document.getElementById('players-grid');
-        const gamePlayersGrid = document.getElementById('game-players-grid');
         const votePlayersGrid = document.getElementById('vote-players-grid');
         const myAttributesContainer = document.getElementById('my-attributes');
         const roundInfo = document.getElementById('round-info');
@@ -1110,16 +1109,10 @@
         
         function renderPlayers() {
             playersGrid.innerHTML = '';
-            gamePlayersGrid.innerHTML = '';
             
             gameState.players.forEach(player => {
                 const playerCard = createPlayerCard(player, 'lobby');
                 playersGrid.appendChild(playerCard);
-                
-                if (gameState.gameStarted) {
-                    const gamePlayerCard = createPlayerCard(player, 'game');
-                    gamePlayersGrid.appendChild(gamePlayerCard);
-                }
             });
             
             const currentPlayer = gameState.players.find(p => p.isCurrentUser);
