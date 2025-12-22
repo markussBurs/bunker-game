@@ -27,7 +27,7 @@ export const GameProvider = ({ children }) => {
   // Динамическое подключение к сокету
   useEffect(() => {
     const socketUrl = import.meta.env.PROD 
-      ? 'https://ваш-рендер-сервер.onrender.com'
+      ? 'https://bunker-backend-wgu1.onrender.com'
       : 'http://localhost:5000';
     
     const newSocket = io(socketUrl, {
